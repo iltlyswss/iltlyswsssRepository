@@ -1,0 +1,46 @@
+import struct
+
+# Преобразует float → 8-символьная hex-строка IEEE 754 single (32 бита)
+def float_to_ieee754_hex(f):
+    байты = struct.pack('!f', f)               # float → 4 байта IEEE 754
+    целое = struct.unpack('!I', байты)[0]      # байты → unsigned int 32
+    return hex(целое)[2:].upper().zfill(8)     # в hex без 0x, заглавные, 8 символов
+
+
+# Преобразует float → 16-символьная hex-строка IEEE 754 double (64 бита)
+def double_to_ieee754_hex(d):
+    байты = struct.pack('!d', d)               # float → 8 байт IEEE 754
+    целое = struct.unpack('!Q', байты)[0]      # байты → unsigned long long
+    return hex(целое)[2:].upper().zfill(16)
+
+
+# Складывает числа и показывает, как они выглядят в IEEE 754
+def sum_and_show_ieee754(numbers, precision="single"):
+    # Выбираем нужный преобразователь и количество бит
+    conv = float_to_ieee754_hex if precision == "single" else double_to_ieee754_hex
+    bits = 32 if precision == "single" else 64
+
+    total = 0.0
+    
+    # Заголовок таблицы
+    print(f"{'Число':>12}  {'IEEE 754 hex':>12}  {'Бинарно':>35}  {'Сумма':>18}")
+    print("-" * 85)
+
+    # Проходим по каждому числу
+    for num in numbers:
+        total += num                           # добавляем к сумме
+        
+        h = conv(num)                          # hex текущего числа
+        s = conv(total)                        # hex текущей суммы
+        
+        # Двоичная строка (32 или 64 бита)
+        bin_str = bin(int(h, 16))[2:].zfill(bits)
+        # Красиво разделяем: знак | экспонента | мантисса
+        bin_fmt = f"{bin_str[0]} {bin_str[1:9]} {bin_str[9:]}"
+        
+        # Выводим строку таблицы
+        print(f"{num:12.6g}  {h:>12}  {bin_fmt:>35}  {total:18.8g} ({s})")
+    
+    # Итоговая строка
+    print("-" * 85)
+    print(f"Итог: {total:.8g}  →  {conv(total)}")
